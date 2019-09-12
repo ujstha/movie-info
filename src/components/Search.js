@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import { TextField } from '@material-ui/core';
-import '@zendeskgarden/react-pagination/dist/styles.css';
-import { ThemeProvider } from '@zendeskgarden/react-theming';
-import { Pagination } from '@zendeskgarden/react-pagination';
+import { Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 
 const BASE_URL = 'http://www.omdbapi.com/';
 const API_KEY = 'ceb40971';
@@ -15,6 +13,7 @@ export default class Search extends Component {
             movieData: [],
             isLoaded: '',
             query: '',
+            pageLimit: 5
         }
     }
 
@@ -27,7 +26,9 @@ export default class Search extends Component {
 
     search = (e) => {
         e.preventDefault();
-        axios.get(`${BASE_URL}?s=${this.state.query}&type=&apikey=${API_KEY}`)
+        this.state.currentPage = e.target.id || 1;
+        
+        axios.get(`${BASE_URL}?s=${this.state.query}&page=${this.state.currentPage}&type=&apikey=${API_KEY}`)
         .then(res => {
             console.log(res.data, 'data');
             const movies = res.data;
@@ -39,7 +40,24 @@ export default class Search extends Component {
     }
 
     searchResult = () => {
+        const pageNumbers = [];
         if (this.state.isLoaded === "True") {
+            for (let i = 1; i <= Math.ceil(Number(this.state.movieData.totalResults) / 10); i++) {
+                pageNumbers.push(i);
+            }
+            const renderPageNumbers = pageNumbers.map(number => {
+                let classes = this.state.currentPage === number ? 'active' : '';
+                return (
+                    <li
+                        key={number}
+                        id={number}
+                        onClick={this.search}
+                        className={classes}
+                    >
+                        {number}
+                    </li>
+                );
+            });
             return (
                 <div>
                     <h1>Search Result for "{this.state.query}"</h1>
@@ -51,6 +69,19 @@ export default class Search extends Component {
                             </div>
                         ))}
                     </div>
+                    {(renderPageNumbers.length <= 1) ? '' : 
+                        <div className="row">
+                            <ul className="col-md-12 text-center">
+                            {/*eslint-disable-next-line react/no-direct-mutation-state*/}
+                            Page {this.state.currentPage} of {renderPageNumbers.length}
+                            </ul>
+                            <ul id="horizontal-list" className="col-md-12 text-center">
+                            
+                                {renderPageNumbers}
+                            
+                            </ul>
+                        </div>
+                    }
                 </div>
             )
         }
