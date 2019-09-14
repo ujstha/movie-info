@@ -1,34 +1,35 @@
-ul#horizontal-list {
+div.page-number .col-md-12 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.container ul#horizontal-list {
 	min-width: 100%;
   list-style: none;
   width: 100%;
   max-width: 100%;
   overflow: auto;
-  height: 50px;
+  height: 100px;
   vertical-align: middle;
+  padding: 15px;
 }
 ul#horizontal-list li {
   display: inline;
   margin: 2px;
-  padding: 15px 15px 5px 15px;
+  padding: 10px;
   background-color: black;
   color: white;
-}
-.btn.btn-secondary {
-  background-color: rgba(0, 0, 0, 1);
-  border-radius: 0px;
-  margin: 10px auto;
-  padding: 3px 3px 0px 3px;
-}
-.btn.btn-secondary.active:hover {
-  cursor: pointer;
 }
 ul#horizontal-list li:hover {
   cursor: pointer;
   background-color: rgba(0,0,0,.6);
 }
-ul#horizontal-list li.active {
+ul#horizontal-list a > li.active {
   background-color: rgba(0,0,0,.6);
-  color: white;
-  border: 2px solid black;
+  color: black;
+  border: 3px solid black;
 }
+ul#horizontal-list a.active, ul#horizontal-list a {
+  text-decoration: none;
+}
+
