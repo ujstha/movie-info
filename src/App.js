@@ -8,7 +8,7 @@ class App extends Component {
     return (
       <BrowserRouter>
         <div className="container">
-          <div style={{ marginTop: '60px', marginBottom: '60px' }}>
+          <div>
             <Switch>
               <Route path="/" component={Search} exact></Route>
               <Route path={`/page/:currentPage`} component={Search}></Route>
