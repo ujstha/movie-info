@@ -1,8 +1,8 @@
 import React from 'react';
 
 const Suggestions = (props) => {
-  const options = props.movieData.map(r => (
-    <li key={r.imdbID}>
+  const options = props.movieData.map((r, i) => (
+    <li key={i}>
       {r.Title}
     </li>
   ))

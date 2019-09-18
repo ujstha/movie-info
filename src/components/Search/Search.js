@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import { TextField, InputAdornment, Button, FormControl, InputLabel, Select, MenuItem, OutlinedInput } from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
 import { Link } from 'react-router-dom';
-
+import axios from 'axios';
+import { TextField, InputAdornment, Button, Collapse, Card, CardContent, Typography, FormControl, Select, MenuItem } from '@material-ui/core';
+import SearchIcon from '@material-ui/icons/Search';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 const BASE_URL = 'http://www.omdbapi.com/';
 const API_KEY = 'ceb40971';
 
@@ -12,6 +12,7 @@ export default class Search extends Component {
         super();
         this.state = {
             movieData: [],
+            singleMovieData: [],
             isLoaded: '',
             query: '',
             type: '',
@@ -45,12 +46,8 @@ export default class Search extends Component {
         window.scrollTo(0,0);
     }
 
-    open = () => {
-        this.setState({displayToggle: true})
-    }
-
-    close = () => {
-        this.setState({displayToggle: false})
+    handleExpandOpen = () => {
+        this.setState({displayToggle: !this.state.displayToggle})
     }
 
     onChange = e => {
@@ -68,7 +65,7 @@ export default class Search extends Component {
         this.props.history.push(`?s=${this.state.query}`);
         this.setState({displayToggle: false});
 
-        axios.get(`${BASE_URL}?s=${this.state.query}&page=${currentPage}&type=&apikey=${API_KEY}`)
+        axios.get(`${BASE_URL}?s=${this.state.query}&page=${currentPage}&type=${this.state.type}&apikey=${API_KEY}`)
         .then(res => {
             this.props.history.push(`/page/${currentPage}?s=${this.state.query}`);
             
@@ -102,12 +99,25 @@ export default class Search extends Component {
             });
             return (
                 <div>
-                    <h1>Search Result for "{this.state.query}"</h1>
-                    <div>
+                    <div className="text-center my-4">
+                        <h4><span className="text-primary">{this.state.movieData.totalResults}</span> search results for "{this.state.query}"</h4>
+                    </div>
+                    <div style={{padding: 30, paddingTop: 10, backgroundColor: 'rgba(0,0,0,.9)', color: 'white'}}>
                         {this.state.movieData.Search.map((movie, i) => (
-                            <div key={i}>
-                                {movie.Title}
-                                <img src={movie.Poster} style={{width: '200px', height: '185px'}} alt={movie.Title} />
+                            <div key={i} className="row">
+                                <div className="col-md-12" style={{borderBottom: '1px solid darkgrey', padding: 20}}>
+                                    <h4 
+                                        onClick={() => (axios.get(`${BASE_URL}?i=${movie.imdbID}&apikey=${API_KEY}`)
+                                        .then(res => {                
+                                            const singleMovie = res.data;
+                                            console.log(singleMovie, 'movie');
+                                            this.setState({ singleMovieData: singleMovie});
+                                        }))}
+                                    >
+                                        {movie.Title} ({movie.Year})
+                                    </h4>
+                                    <img src={movie.Poster} style={{width: 170, height: 250, marginTop: 15}} alt={movie.Title} />
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -141,24 +151,8 @@ export default class Search extends Component {
 
     render() {
         return (
-            <div>
-                <div id="adv-search" style={this.state.displayToggle ? {display: 'block'} : {display: 'none'}} className="overlay">
-                    <span className="closebtn" onClick={this.close} title="Close Overlay">×</span>
-                    <div className="overlay-content">
-                        <form onSubmit={this.search}>
-                            <input 
-                                type="text" 
-                                name="query"
-                                placeholder="Search Movies, TV Shows...." 
-                                onChange={this.onChange}
-                                value={this.state.query !== '' ? this.state.query : ''}
-                            />
-                            <button type="submit"><i class="fa fa-search"></i></button>                            
-                        </form>
-                    </div>
-                </div>
-
-                <form className="search-form" onSubmit={this.search}>
+            <div className="row mt-3">
+                <form className="search-form col-md-12" onSubmit={this.search}>
                     <TextField
                         id="outlined-search"
                         name="query"
@@ -178,36 +172,8 @@ export default class Search extends Component {
                             },
                             endAdornment: (
                                 <InputAdornment position="end">
-                                    <FormControl variant="outlined">
-          <InputLabel
-            ref={ref => {
-              this.InputLabelRef = ref;
-            }}
-            htmlFor="outlined-age-simple"
-          >
-            Type
-          </InputLabel>
-          <Select
-            value={this.state.type}
-            onChange={this.handleChange}
-            input={
-              <OutlinedInput
-                labelWidth={this.state.labelWidth}
-                name="type"
-                id="outlined-age-simple"
-              />
-            }
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>Ten</MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={30}>Thirty</MenuItem>
-          </Select>
-        </FormControl>
-                                    <Button onClick={this.search} variant="contained" size="large" color="primary">
-                                        <SearchIcon />
+                                    <Button margin="normal" onClick={this.search} variant="contained" size="large" color="primary">
+                                        <SearchIcon fontSize="normal" />
                                     </Button>
                                 </InputAdornment>
                               )
@@ -215,10 +181,43 @@ export default class Search extends Component {
                         onChange={this.onChange}
                         value={this.state.query !== '' ? this.state.query : ''}
                     />
+                    <Button className="openBtn" variant="contained" size="medium" color="secondary" onClick={this.handleExpandOpen}>
+                        Advanced Search
+                        <ExpandMoreIcon color="inherit" />
+                    </Button>
+                    <Collapse in={this.state.displayToggle} timeout="auto" unmountOnExit className="mt-3">
+                        <Card style={{maxWidth: '100%'}}>
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" style={{fontFamily: 'Raleway'}} component="h5">
+                                    Select Movie Type
+                                </Typography>
+                                <FormControl variant="outlined" style={{minWidth: 120}}>
+                                    <Select
+                                        value={this.state.type}
+                                        onChange={this.onChange}
+                                        displayEmpty
+                                        name="type" 
+                                        style={{fontFamily: 'Raleway'}}
+                                    >
+                                        <MenuItem value="">
+                                            <em>Both</em>
+                                        </MenuItem>
+                                        <MenuItem value="movie">Movie</MenuItem>
+                                        <MenuItem value="series">Series</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </CardContent>
+                        </Card>
+                    </Collapse>
                 </form>
-                <Button className="openBtn" variant="contained" size="medium" color="secondary" onClick={this.open}>Advanced Search</Button>
-                {this.state.isLoaded === "False" ? <h1>Movie Not Found!</h1> : ''}
+                
+                <div className="col-md-12 text-center">
+                    {this.state.isLoaded === "False" ? <h1>Movie Not Found!</h1> : ''}
+                </div>
+                <div className="col-md-12">
                 {this.searchResult()}
+                
+                </div>
             </div>
         )
     }
