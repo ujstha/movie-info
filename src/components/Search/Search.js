@@ -4,6 +4,8 @@ import axios from 'axios';
 import { TextField, InputAdornment, Button, Collapse, Card, CardContent, Typography, FormControl, Select, MenuItem } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import SingleMovie from '../SingleMovie/SingleMovie';
+
 const BASE_URL = 'http://www.omdbapi.com/';
 const API_KEY = 'ceb40971';
 
@@ -18,6 +20,7 @@ export default class Search extends Component {
             type: '',
             pageLimit: 5,
             paging: 1,
+            imdbID: []
         }
     }
     componentDidMount() {
@@ -85,40 +88,47 @@ export default class Search extends Component {
             const renderPageNumbers = pageNumbers.map(number => {
                 let classes = this.state.paging === number ? 'active' : '';
                 return (
-                    <Link to={`/page/${this.state.paging}`} key={number} style={number > 5 ? {display: 'none'} : {}} className={classes}>
+                    <Link to={`/page/${number}`} key={number} style={number > 5 ? {display: 'none'} : {}} className={classes}>
                         <li 
                             id={number}
                             onClick={this.search}
                             className={classes}
                         >
-                            {number}
+                            {this.state.paging+1 >=5 ? number+2 : number}
                         </li>
-                        {this.state.paging >= 4 ? <div id={this.state.paging+1}>next</div> : ''}
+                        {number >= 5 && number < pageNumbers.length ? <li id={this.state.paging+1} onClick={this.search} style={this.state.paging === pageNumbers.length ? {display: 'none'} : {}}><i className="material-icons">next_page</i></li> : ''}
                     </Link>
                 );
             });
+            const { singleMovieData } = this.state;
             return (
                 <div>
                     <div className="text-center my-4">
                         <h4><span className="text-primary">{this.state.movieData.totalResults}</span> search results for "{this.state.query}"</h4>
                     </div>
-                    <div style={{padding: 30, paddingTop: 10, backgroundColor: 'rgba(0,0,0,.9)', color: 'white'}}>
+                    <div>
                         {this.state.movieData.Search.map((movie, i) => (
-                            <div key={i} className="row">
-                                <div className="col-md-12" style={{borderBottom: '1px solid darkgrey', padding: 20}}>
-                                    <h4 
-                                        onClick={() => (axios.get(`${BASE_URL}?i=${movie.imdbID}&apikey=${API_KEY}`)
-                                        .then(res => {                
-                                            const singleMovie = res.data;
-                                            console.log(singleMovie, 'movie');
-                                            this.setState({ singleMovieData: singleMovie});
-                                        }))}
-                                    >
-                                        {movie.Title} ({movie.Year})
-                                    </h4>
-                                    <img src={movie.Poster} style={{width: 170, height: 250, marginTop: 15}} alt={movie.Title} />
+                            <div key={i}>
+                                <div className="row" style={{padding: 30, paddingTop: 10, backgroundColor: 'rgba(0,0,0,.9)', color: 'white'}}>
+                                    <div className="col-md-3">
+                                        <img src={movie.Poster} style={{width: 170, height: 250, marginTop: 15}} alt={movie.Title} />
+                                    </div>
+                                    <div className="col-md-9 my-3">
+                                        <h4 
+                                            onClick={() => (axios.get(`${BASE_URL}?i=${movie.imdbID}&apikey=${API_KEY}`)
+                                            .then(res => {                
+                                                const singleMovie = res.data;
+                                                console.log(singleMovie, 'movie');
+                                                this.setState({ singleMovieData: singleMovie, imdbID: movie.imdbID });
+                                            }))}
+                                        >
+                                            {movie.Title} ({movie.Year})
+                                        </h4>
+                                        {this.state.imdbID === movie.imdbID ? `Actors - ${singleMovieData.Actors}` : ''}
+                                    </div>
                                 </div>
                             </div>
+                           
                         ))}
                     </div>
                     {(renderPageNumbers.length <= 1) ? '' : 
@@ -173,7 +183,7 @@ export default class Search extends Component {
                             endAdornment: (
                                 <InputAdornment position="end">
                                     <Button margin="normal" onClick={this.search} variant="contained" size="large" color="primary">
-                                        <SearchIcon fontSize="normal" />
+                                        <SearchIcon fontSize="default" />
                                     </Button>
                                 </InputAdornment>
                               )
@@ -215,8 +225,7 @@ export default class Search extends Component {
                     {this.state.isLoaded === "False" ? <h1>Movie Not Found!</h1> : ''}
                 </div>
                 <div className="col-md-12">
-                {this.searchResult()}
-                
+                    {this.searchResult()}
                 </div>
             </div>
         )

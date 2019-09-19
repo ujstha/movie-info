@@ -16,7 +16,7 @@ div.page-number .col-md-12 {
   vertical-align: middle;
   padding: 15px;
 }
-ul#horizontal-list li {
+ul#horizontal-list li, ul#horizontal-list button {
   display: inline;
   margin: 2px;
   padding: 10px;
